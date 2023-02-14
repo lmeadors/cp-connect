@@ -33,7 +33,6 @@ func Cluster(request ClusterRequest) {
 	if err != nil {
 		fmt.Print(err.Error())
 	}
-	//req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 
 	// execute request

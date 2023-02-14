@@ -3,6 +3,7 @@ package lib
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"io/fs"
@@ -12,17 +13,37 @@ import (
 	"path/filepath"
 )
 
-func Connector(host string, jsonFilename string, action string) {
+func BuildConnectorFlagSet() ConnectorRequest {
+
+	connectorCmd := flag.NewFlagSet("connector", flag.ExitOnError)
+
+	return ConnectorRequest{
+		Command: connectorCmd,
+		Host:    connectorCmd.String("host", "http://localhost:8083", "cluster host"),
+		Json:    connectorCmd.String("json", "", "json configuration file"),
+		Action:  connectorCmd.String("action", "Config", "action to perform (Config | Validate | Put | Status | Pause | Resume | Delete)"),
+	}
+
+}
+
+type ConnectorRequest struct {
+	Command *flag.FlagSet
+	Host    *string
+	Json    *string
+	Action  *string
+}
+
+func Connector(request ConnectorRequest) {
 
 	logger := log.Default()
 
-	if len(jsonFilename) == 0 {
+	if len(*request.Json) == 0 {
 		err := filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
 			if !info.IsDir() && filepath.Ext(path) == ".json" {
-				jsonFilename = path
+				*request.Json = path
 			}
 			return nil
 		})
@@ -31,16 +52,17 @@ func Connector(host string, jsonFilename string, action string) {
 		}
 	}
 
-	logger.Printf("host:            %s\n", host)
-	logger.Printf("json file:       %s\n", jsonFilename)
-	logger.Printf("action:          %s\n", action)
+	logger.Printf("host:            %s\n", *request.Host)
+	logger.Printf("json file:       %s\n", *request.Json)
+	logger.Printf("action:          %s\n", *request.Action)
 
-	jsonFile, err := os.Open(jsonFilename)
+	jsonFile, err := os.Open(*request.Json)
 	if err != nil {
-		log.Fatalf("unable to read json configuration %s\n", jsonFilename)
+		log.Fatalf("unable to read json configuration %s\n", request.Json)
 	}
 	defer jsonFile.Close()
 	jsonBytes, _ := io.ReadAll(jsonFile)
+	//logger.Printf(string(jsonBytes))
 	var config JsonConfig
 	json.Unmarshal(jsonBytes, &config)
 
@@ -48,12 +70,12 @@ func Connector(host string, jsonFilename string, action string) {
 	logger.Printf("connector class: %s\n", config.ConnectorClass)
 
 	var uri string
-	//var req *http.Request
-	switch action {
+
+	switch *request.Action {
 	case "Put":
 		//	PUT /connectors/(string:name)/config
 		uri = fmt.Sprintf("/connectors/%s/config", config.Name)
-		req, _ := http.NewRequest("PUT", host+uri, bytes.NewReader(jsonBytes))
+		req, _ := http.NewRequest("PUT", *request.Host+uri, bytes.NewReader(jsonBytes))
 		req.Header.Add("Content-Type", "application/json")
 		client := http.Client{}
 		resp, err := client.Do(req)
@@ -72,7 +94,7 @@ func Connector(host string, jsonFilename string, action string) {
 		fmt.Println(dst.String())
 	case "Validate":
 		uri = fmt.Sprintf("/connector-plugins/%s/config/validate", config.ConnectorClass)
-		req, _ := http.NewRequest("PUT", host+uri, bytes.NewReader(jsonBytes))
+		req, _ := http.NewRequest("PUT", *request.Host+uri, bytes.NewReader(jsonBytes))
 		req.Header.Add("Content-Type", "application/json")
 		client := http.Client{}
 		resp, err := client.Do(req)
@@ -92,7 +114,7 @@ func Connector(host string, jsonFilename string, action string) {
 	case "Pause":
 
 		uri = fmt.Sprintf("/connectors/%s/pause", config.Name)
-		req, _ := http.NewRequest("PUT", host+uri, nil)
+		req, _ := http.NewRequest("PUT", *request.Host+uri, nil)
 
 		resp := executeRequestWithoutResponseBody(req)
 
@@ -101,7 +123,7 @@ func Connector(host string, jsonFilename string, action string) {
 	case "Resume":
 
 		uri = fmt.Sprintf("/connectors/%s/resume", config.Name)
-		req, _ := http.NewRequest("PUT", host+uri, nil)
+		req, _ := http.NewRequest("PUT", *request.Host+uri, nil)
 
 		resp := executeRequestWithoutResponseBody(req)
 
@@ -111,7 +133,7 @@ func Connector(host string, jsonFilename string, action string) {
 
 		// DELETE /connectors/(string:name)/
 		uri = fmt.Sprintf("/connectors/%s", config.Name)
-		req, _ := http.NewRequest("DELETE", host+uri, nil)
+		req, _ := http.NewRequest("DELETE", *request.Host+uri, nil)
 
 		resp := executeRequestWithoutResponseBody(req)
 
@@ -119,7 +141,7 @@ func Connector(host string, jsonFilename string, action string) {
 
 	case "Status":
 		uri = fmt.Sprintf("/connectors/%s/status", config.Name)
-		req, _ := http.NewRequest("GET", host+uri, nil)
+		req, _ := http.NewRequest("GET", *request.Host+uri, nil)
 		req.Header.Add("Content-Type", "application/json")
 		client := http.Client{}
 		resp, err := client.Do(req)
@@ -139,7 +161,7 @@ func Connector(host string, jsonFilename string, action string) {
 	default:
 		// Config is the default behavior
 		uri = fmt.Sprintf("/connectors/%s/config", config.Name)
-		req, _ := http.NewRequest("GET", host+uri, nil)
+		req, _ := http.NewRequest("GET", *request.Host+uri, nil)
 		req.Header.Add("Content-Type", "application/json")
 		client := http.Client{}
 		resp, err := client.Do(req)

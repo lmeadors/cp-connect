@@ -19,20 +19,11 @@ func HandleArguments() {
 	healthRequest := BuildHealthFlagSet()
 	commands = append(commands, *healthRequest.Command)
 
-	connectorCmd := flag.NewFlagSet("connector", flag.ExitOnError)
-	connectorHost := connectorCmd.String("host", "http://localhost:8083", "cluster host")
-	connectorJson := connectorCmd.String("json", "", "json configuration file")
-	connectorAction := connectorCmd.String("action", "Config", "action to perform (Config | Validate | Put | Status | Pause | Resume | Delete)")
-
-	commands = append(commands, *connectorCmd)
+	connectorRequest := BuildConnectorFlagSet()
+	commands = append(commands, *connectorRequest.Command)
 
 	if len(os.Args) < 2 {
-		fmt.Println("expected one for the subcommands:")
-		for i := range commands {
-			println(commands[i].Name())
-			commands[i].PrintDefaults()
-			//println(commands[i].Args())
-		}
+		showHelp(commands)
 		os.Exit(1)
 	}
 
@@ -44,11 +35,22 @@ func HandleArguments() {
 		healthRequest.Command.Parse(os.Args[2:])
 		Health(healthRequest)
 	case "connector":
-		connectorCmd.Parse(os.Args[2:])
-		Connector(*connectorHost, *connectorJson, *connectorAction)
+		connectorRequest.Command.Parse(os.Args[2:])
+		Connector(connectorRequest)
 	case "connectors":
 		connectorsRequest.Command.Parse(os.Args[2:])
 		Connectors(connectorsRequest)
+	default:
+		showHelp(commands)
 	}
 
+}
+
+func showHelp(commands []flag.FlagSet) {
+	fmt.Println("expected one for the subcommands:")
+	for i := range commands {
+		println(commands[i].Name())
+		commands[i].PrintDefaults()
+		//println(commands[i].Args())
+	}
 }
