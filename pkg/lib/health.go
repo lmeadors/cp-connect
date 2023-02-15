@@ -63,6 +63,13 @@ func Health(request HealthRequest) {
 		fmt.Print(err.Error())
 	}
 
+	var colorMap = map[string]Color{
+		"RUNNING":    ColorGreen,
+		"UNASSIGNED": ColorCyan,
+		"PAUSED":     ColorYellow,
+		"FAILED":     ColorRed,
+	}
+
 	for connector, status := range statusMap {
 		var states StateTracker
 		states.StateMap = make(map[string]float64)
@@ -76,7 +83,7 @@ func Health(request HealthRequest) {
 		}
 		//fmt.Printf("states: %f\n", states.Total)
 		for key, f := range states.StateMap {
-			fmt.Printf("\t- %s: %.2f%s (%.0f of %.0f tasks) \n", key, 100*(f/states.Total), "%", f, states.Total)
+			fmt.Printf("  - %s%s:%s %.2f%s (%.0f of %.0f tasks) \n", colorMap[key], key, ColorReset, 100*(f/states.Total), "%", f, states.Total)
 		}
 	}
 
