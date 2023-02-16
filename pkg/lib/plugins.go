@@ -5,28 +5,31 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 )
 
-type ClusterRequest struct {
+type PluginsRequest struct {
 	Command *flag.FlagSet
 	Host    *string
 }
 
-func BuildClusterFlagSet() ClusterRequest {
+func BuildPluginsRequest() PluginsRequest {
 
-	flagSet := flag.NewFlagSet("cluster", flag.ExitOnError)
+	flagSet := flag.NewFlagSet("plugins", flag.ExitOnError)
 
-	return ClusterRequest{
+	return PluginsRequest{
 		Command: flagSet,
 		Host:    flagSet.String("host", "http://localhost:8083", "cluster host"),
 	}
 
 }
 
-func Cluster(request ClusterRequest) {
+func Plugins(request PluginsRequest) {
 
-	path := "/"
+	logger := log.Default()
+
+	path := "/connector-plugins/"
 
 	// build request
 	req, err := http.NewRequest("GET", *request.Host+path, nil)
@@ -35,6 +38,7 @@ func Cluster(request ClusterRequest) {
 	}
 	req.Header.Add("Content-Type", "application/json")
 
+	logger.Printf("url: %s\n", req.URL.String())
 	// execute request
 	client := http.Client{}
 	resp, err := client.Do(req)
@@ -52,7 +56,7 @@ func Cluster(request ClusterRequest) {
 	}
 
 	// convert to our response
-	var cpResponse ClusterResponse
+	var cpResponse PluginsResponse
 	err2 := json.Unmarshal(bodyBytes, &cpResponse)
 	if err2 != nil {
 		fmt.Print(err.Error())
@@ -63,18 +67,16 @@ func Cluster(request ClusterRequest) {
 
 }
 
-type ClusterResponse struct {
-	Version        string `json:"version"`
-	Commit         string `json:"commit"`
-	KafkaClusterId string `json:"kafka_cluster_id"`
+type PluginResponse struct {
+	Class   string `json:"class"`
+	Type    string `json:"type"`
+	Version string `json:"version"`
 }
 
-func (responseObject ClusterResponse) Show() {
-	fmt.Printf("Version:         %s\n", responseObject.Version)
-	fmt.Printf("Commit:          %s\n", responseObject.Commit)
-	fmt.Printf("KafakaClusterId: %s\n", responseObject.KafkaClusterId)
-}
+type PluginsResponse []PluginResponse
 
-type CPResponse interface {
-	Show()
+func (responseObject PluginsResponse) Show() {
+	for _, plugin := range responseObject {
+		fmt.Printf("%-80s %-25s %s\n", plugin.Class, plugin.Version, plugin.Type)
+	}
 }

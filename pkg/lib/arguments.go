@@ -22,6 +22,9 @@ func HandleArguments() {
 	connectorRequest := BuildConnectorFlagSet()
 	commands = append(commands, *connectorRequest.Command)
 
+	pluginsRequest := BuildPluginsRequest()
+	commands = append(commands, *pluginsRequest.Command)
+
 	if len(os.Args) < 2 {
 		showHelp(commands)
 		os.Exit(1)
@@ -37,6 +40,9 @@ func HandleArguments() {
 	case "connector":
 		connectorRequest.Command.Parse(os.Args[2:])
 		Connector(connectorRequest)
+	case "plugins":
+		pluginsRequest.Command.Parse(os.Args[2:])
+		Plugins(pluginsRequest)
 	case "connectors":
 		connectorsRequest.Command.Parse(os.Args[2:])
 		Connectors(connectorsRequest)
