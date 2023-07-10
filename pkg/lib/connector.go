@@ -13,27 +13,48 @@ import (
 	"path/filepath"
 )
 
-func BuildConnectorFlagSet() ConnectorRequest {
+func BuildConnectorFlagSet(cmdMap map[string]CpCommand) ConnectorRequest {
 
-	connectorCmd := flag.NewFlagSet("connector", flag.ExitOnError)
+	name := "connector"
+	connectorCmd := flag.NewFlagSet(name, flag.ExitOnError)
 
-	return ConnectorRequest{
+	request := ConnectorRequest{
+		Name:    name,
 		Command: connectorCmd,
 		Host:    connectorCmd.String("host", "http://localhost:8083", "cluster host"),
 		Json:    connectorCmd.String("json", "", "json configuration file"),
-		Action:  connectorCmd.String("action", "Config", "action to perform (Config | Validate | Put | Status | Pause | Resume | Delete)"),
+		Action:  connectorCmd.String("action", "Config", "action to perform (Config | Validate | Restart | Put | Status | Pause | Resume | Delete)"),
 	}
+	cmdMap[name] = request
+	return request
 
 }
 
 type ConnectorRequest struct {
+	Name    string
 	Command *flag.FlagSet
 	Host    *string
 	Json    *string
 	Action  *string
 }
 
-func Connector(request ConnectorRequest) {
+func (request ConnectorRequest) GetCommand() flag.FlagSet {
+	return *request.Command
+}
+
+func (request ConnectorRequest) GetName() string {
+	return request.Name
+}
+
+func (request ConnectorRequest) PrintDefaults() {
+	request.Command.PrintDefaults()
+}
+
+func (request ConnectorRequest) Execute() {
+	//	Connector(request)
+	//}
+	//
+	//func Connector(request ConnectorRequest) {
 
 	logger := log.Default()
 
@@ -124,6 +145,15 @@ func Connector(request ConnectorRequest) {
 
 		uri = fmt.Sprintf("/connectors/%s/resume", config.Name)
 		req, _ := http.NewRequest("PUT", *request.Host+uri, nil)
+
+		resp := executeRequestWithoutResponseBody(req)
+
+		fmt.Println("response status: ", resp.Status)
+
+	case "Restart":
+
+		uri = fmt.Sprintf("/connectors/%s/restart?includeTasks=true&onlyFailed=true", config.Name)
+		req, _ := http.NewRequest("POST", *request.Host+uri, nil)
 
 		resp := executeRequestWithoutResponseBody(req)
 

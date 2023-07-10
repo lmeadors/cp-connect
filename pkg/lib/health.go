@@ -8,21 +8,42 @@ import (
 	"net/http"
 )
 
-func BuildHealthFlagSet() HealthRequest {
-	healthCmd := flag.NewFlagSet("health-check", flag.ExitOnError)
+func BuildHealthFlagSet(cmdMap map[string]CpCommand) HealthRequest {
+	name := "health-check"
+	healthCmd := flag.NewFlagSet(name, flag.ExitOnError)
 	healthHost := healthCmd.String("host", "http://localhost:8083", "cluster host")
-	return HealthRequest{
+	request := HealthRequest{
 		Command: healthCmd,
+		Name:    name,
 		Host:    healthHost,
 	}
+	cmdMap[name] = request
+	return request
 }
 
 type HealthRequest struct {
 	Command *flag.FlagSet
+	Name    string
 	Host    *string
 }
 
-func Health(request HealthRequest) {
+func (request HealthRequest) GetCommand() flag.FlagSet {
+	return *request.Command
+}
+
+func (request HealthRequest) GetName() string {
+	return request.Name
+}
+
+func (request HealthRequest) PrintDefaults() {
+	request.Command.PrintDefaults()
+}
+
+func (request HealthRequest) Execute() {
+	//Health(request)
+	//}
+	//
+	//func Health(request HealthRequest) {
 
 	//logger := log.Default()
 	//expand := Status
@@ -73,7 +94,7 @@ func Health(request HealthRequest) {
 	for connector, status := range statusMap {
 		var states StateTracker
 		states.StateMap = make(map[string]float64)
-		fmt.Printf("%s: %s\n", connector, status.Status.Connector.State)
+		fmt.Printf("%s: %s%s%s\n", connector, colorMap[status.Status.Connector.State], status.Status.Connector.State, ColorReset)
 		for _, task := range status.Status.Tasks {
 			value := states.StateMap[task.State]
 			states.Total++

@@ -11,21 +11,42 @@ import (
 
 type PluginsRequest struct {
 	Command *flag.FlagSet
+	Name    string
 	Host    *string
 }
 
-func BuildPluginsRequest() PluginsRequest {
+func (request PluginsRequest) GetCommand() flag.FlagSet {
+	return *request.Command
+}
 
-	flagSet := flag.NewFlagSet("plugins", flag.ExitOnError)
+func (request PluginsRequest) GetName() string {
+	return request.Name
+}
 
-	return PluginsRequest{
+func (request PluginsRequest) PrintDefaults() {
+	request.Command.PrintDefaults()
+}
+
+func BuildPluginsRequest(cmdMap map[string]CpCommand) PluginsRequest {
+
+	name := "plugins"
+	flagSet := flag.NewFlagSet(name, flag.ExitOnError)
+
+	request := PluginsRequest{
 		Command: flagSet,
+		Name:    name,
 		Host:    flagSet.String("host", "http://localhost:8083", "cluster host"),
 	}
+	cmdMap[name] = request
+	return request
 
 }
 
-func Plugins(request PluginsRequest) {
+func (request PluginsRequest) Execute() {
+
+	//}
+	//
+	//func Plugins(request PluginsRequest) {
 
 	logger := log.Default()
 

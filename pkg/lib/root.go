@@ -10,21 +10,44 @@ import (
 
 type ClusterRequest struct {
 	Command *flag.FlagSet
+	Name    string
 	Host    *string
 }
 
-func BuildClusterFlagSet() ClusterRequest {
+func (c ClusterRequest) GetCommand() flag.FlagSet {
+	return *c.Command
+}
 
-	flagSet := flag.NewFlagSet("cluster", flag.ExitOnError)
+func (c ClusterRequest) GetName() string {
+	return c.Name
+}
 
-	return ClusterRequest{
+func (c ClusterRequest) PrintDefaults() {
+	c.Command.PrintDefaults()
+}
+
+func BuildClusterFlagSet(cmdMap map[string]CpCommand) ClusterRequest {
+
+	name := "cluster"
+	flagSet := flag.NewFlagSet(name, flag.ExitOnError)
+
+	request := ClusterRequest{
 		Command: flagSet,
+		Name:    name,
 		Host:    flagSet.String("host", "http://localhost:8083", "cluster host"),
 	}
 
+	cmdMap[name] = request
+
+	return request
+
 }
 
-func Cluster(request ClusterRequest) {
+func (request ClusterRequest) Execute() {
+	//Cluster(request)
+	//}
+	//
+	//func Cluster(request ClusterRequest) {
 
 	path := "/"
 

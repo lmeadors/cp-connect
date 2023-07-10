@@ -10,33 +10,55 @@ import (
 	"net/http"
 )
 
-func BuildConnectorsFlagSet() ConnectorsRequest {
+func BuildConnectorsFlagSet(cmdMap map[string]CpCommand) ConnectorsRequest {
 
-	flagSet := flag.NewFlagSet("connectors", flag.ExitOnError)
+	name := "connectors"
+	flagSet := flag.NewFlagSet(name, flag.ExitOnError)
 
-	return ConnectorsRequest{
-		Command: flagSet,
-		Host:    flagSet.String("host", "http://localhost:8083", "cluster host"),
-		Expand:  flagSet.String("expand", None.Name(), "expanded info (None | Status | Info)"),
-		Name:    flagSet.String("name", "", "connector name"),
-		Config:  flagSet.Bool("config", false, "configuration only"),
-		Status:  flagSet.Bool("status", false, "status only"),
-		Tasks:   flagSet.Bool("tasks", false, "tasks only"),
+	request := ConnectorsRequest{
+		Name:     name,
+		Command:  flagSet,
+		Host:     flagSet.String("host", "http://localhost:8083", "cluster host"),
+		Expand:   flagSet.String("expand", None.Name(), "expanded info (None | Status | Info)"),
+		ConnName: flagSet.String("name", "", "connector name"),
+		Config:   flagSet.Bool("config", false, "configuration only"),
+		Status:   flagSet.Bool("status", false, "status only"),
+		Tasks:    flagSet.Bool("tasks", false, "tasks only"),
 	}
+	cmdMap[name] = request
+
+	return request
 
 }
 
 type ConnectorsRequest struct {
-	Command *flag.FlagSet
-	Host    *string
-	Expand  *string
-	Name    *string
-	Config  *bool
-	Status  *bool
-	Tasks   *bool
+	Name     string
+	Command  *flag.FlagSet
+	Host     *string
+	Expand   *string
+	ConnName *string
+	Config   *bool
+	Status   *bool
+	Tasks    *bool
 }
 
-func Connectors(request ConnectorsRequest) {
+func (request ConnectorsRequest) GetCommand() flag.FlagSet {
+	return *request.Command
+}
+
+func (request ConnectorsRequest) GetName() string {
+	return request.Name
+}
+
+func (request ConnectorsRequest) PrintDefaults() {
+	request.Command.PrintDefaults()
+}
+
+func (request ConnectorsRequest) Execute() {
+	//	Connectors(request)
+	//}
+	//
+	//func Connectors(request ConnectorsRequest) {
 
 	logger := log.Default()
 
@@ -46,8 +68,8 @@ func Connectors(request ConnectorsRequest) {
 	// build request
 
 	var uri string
-	if len(*request.Name) > 0 {
-		uri = *request.Host + path + "/" + *request.Name
+	if len(*request.ConnName) > 0 {
+		uri = *request.Host + path + "/" + *request.ConnName
 		if *request.Config {
 			uri += "/config"
 		} else if *request.Status {
@@ -60,7 +82,7 @@ func Connectors(request ConnectorsRequest) {
 	}
 
 	logger.Printf("host:   %s\n", *request.Host)
-	logger.Printf("name:   %s\n", *request.Name)
+	logger.Printf("name:   %s\n", *request.ConnName)
 	logger.Printf("expand: %s\n", expand.Name())
 	logger.Printf("uri:    %s\n", uri)
 

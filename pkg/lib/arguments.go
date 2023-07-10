@@ -6,57 +6,43 @@ import (
 	"os"
 )
 
+type CpCommand interface {
+	GetCommand() flag.FlagSet
+	GetName() string
+	PrintDefaults()
+	Execute()
+}
+
 func HandleArguments() {
 
-	var commands []flag.FlagSet
+	var cmdMap = make(map[string]CpCommand)
 
-	clusterRequest := BuildClusterFlagSet()
-	commands = append(commands, *clusterRequest.Command)
-
-	connectorsRequest := BuildConnectorsFlagSet()
-	commands = append(commands, *connectorsRequest.Command)
-
-	healthRequest := BuildHealthFlagSet()
-	commands = append(commands, *healthRequest.Command)
-
-	connectorRequest := BuildConnectorFlagSet()
-	commands = append(commands, *connectorRequest.Command)
-
-	pluginsRequest := BuildPluginsRequest()
-	commands = append(commands, *pluginsRequest.Command)
+	BuildClusterFlagSet(cmdMap)
+	BuildConnectorsFlagSet(cmdMap)
+	BuildHealthFlagSet(cmdMap)
+	BuildConnectorFlagSet(cmdMap)
+	BuildPluginsRequest(cmdMap)
 
 	if len(os.Args) < 2 {
-		showHelp(commands)
+		fmt.Println("expected one of the subcommands below:")
+		showHelp(cmdMap)
 		os.Exit(1)
 	}
 
-	switch os.Args[1] {
-	case "cluster":
-		clusterRequest.Command.Parse(os.Args[2:])
-		Cluster(clusterRequest)
-	case "health-check":
-		healthRequest.Command.Parse(os.Args[2:])
-		Health(healthRequest)
-	case "connector":
-		connectorRequest.Command.Parse(os.Args[2:])
-		Connector(connectorRequest)
-	case "plugins":
-		pluginsRequest.Command.Parse(os.Args[2:])
-		Plugins(pluginsRequest)
-	case "connectors":
-		connectorsRequest.Command.Parse(os.Args[2:])
-		Connectors(connectorsRequest)
-	default:
-		showHelp(commands)
+	r, ok := cmdMap[os.Args[1]]
+	if ok {
+		command := r.GetCommand()
+		command.Parse(os.Args[2:])
+		r.Execute()
+	} else {
+		showHelp(cmdMap)
 	}
 
 }
 
-func showHelp(commands []flag.FlagSet) {
-	fmt.Println("expected one for the subcommands:")
-	for i := range commands {
-		println(commands[i].Name())
-		commands[i].PrintDefaults()
-		//println(commands[i].Args())
+func showHelp(cmdMap map[string]CpCommand) {
+	for _, cmd := range cmdMap {
+		println(cmd.GetName())
+		cmd.PrintDefaults()
 	}
 }
