@@ -21,9 +21,9 @@ func BuildConnectorFlagSet(cmdMap map[string]CpCommand) ConnectorRequest {
 	request := ConnectorRequest{
 		Name:    name,
 		Command: connectorCmd,
-		Host:    connectorCmd.String("host", "http://localhost:8083", "cluster host"),
+		Host:    connectorCmd.String("host", getEnv("CP_CONNECT_HOST", "http://localhost:8083"), "cluster host"),
 		Json:    connectorCmd.String("json", "", "json configuration file"),
-		Action:  connectorCmd.String("action", "Config", "action to perform (Config | Validate | Restart | Put | Status | Pause | Resume | Delete)"),
+		Action:  connectorCmd.String("action", "Config", "action to perform (Config | Validate | Restart | RestartAll | Put | Status | Pause | Resume | Delete)"),
 	}
 	cmdMap[name] = request
 	return request
@@ -153,6 +153,15 @@ func (request ConnectorRequest) Execute() {
 	case "Restart":
 
 		uri = fmt.Sprintf("/connectors/%s/restart?includeTasks=true&onlyFailed=true", config.Name)
+		req, _ := http.NewRequest("POST", *request.Host+uri, nil)
+
+		resp := executeRequestWithoutResponseBody(req)
+
+		fmt.Println("response status: ", resp.Status)
+
+	case "RestartAll":
+
+		uri = fmt.Sprintf("/connectors/%s/restart?includeTasks=true&onlyFailed=false", config.Name)
 		req, _ := http.NewRequest("POST", *request.Host+uri, nil)
 
 		resp := executeRequestWithoutResponseBody(req)

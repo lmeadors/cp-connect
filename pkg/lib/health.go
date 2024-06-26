@@ -11,7 +11,7 @@ import (
 func BuildHealthFlagSet(cmdMap map[string]CpCommand) HealthRequest {
 	name := "health-check"
 	healthCmd := flag.NewFlagSet(name, flag.ExitOnError)
-	healthHost := healthCmd.String("host", "http://localhost:8083", "cluster host")
+	healthHost := healthCmd.String("host", getEnv("CP_CONNECT_HOST", "http://localhost:8083"), "cluster host")
 	request := HealthRequest{
 		Command: healthCmd,
 		Name:    name,

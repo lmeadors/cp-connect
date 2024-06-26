@@ -35,7 +35,7 @@ func BuildPluginsRequest(cmdMap map[string]CpCommand) PluginsRequest {
 	request := PluginsRequest{
 		Command: flagSet,
 		Name:    name,
-		Host:    flagSet.String("host", "http://localhost:8083", "cluster host"),
+		Host:    flagSet.String("host", getEnv("CP_CONNECT_HOST", "http://localhost:8083"), "cluster host"),
 	}
 	cmdMap[name] = request
 	return request

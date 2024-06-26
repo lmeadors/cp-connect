@@ -18,7 +18,7 @@ func BuildConnectorsFlagSet(cmdMap map[string]CpCommand) ConnectorsRequest {
 	request := ConnectorsRequest{
 		Name:     name,
 		Command:  flagSet,
-		Host:     flagSet.String("host", "http://localhost:8083", "cluster host"),
+		Host:     flagSet.String("host", getEnv("CP_CONNECT_HOST", "http://localhost:8083"), "cluster host"),
 		Expand:   flagSet.String("expand", None.Name(), "expanded info (None | Status | Info)"),
 		ConnName: flagSet.String("name", "", "connector name"),
 		Config:   flagSet.Bool("config", false, "configuration only"),

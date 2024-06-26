@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 )
 
 type ClusterRequest struct {
@@ -26,6 +27,14 @@ func (c ClusterRequest) PrintDefaults() {
 	c.Command.PrintDefaults()
 }
 
+func getEnv(key string, defaultVal string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+
+	return defaultVal
+}
+
 func BuildClusterFlagSet(cmdMap map[string]CpCommand) ClusterRequest {
 
 	name := "cluster"
@@ -34,7 +43,7 @@ func BuildClusterFlagSet(cmdMap map[string]CpCommand) ClusterRequest {
 	request := ClusterRequest{
 		Command: flagSet,
 		Name:    name,
-		Host:    flagSet.String("host", "http://localhost:8083", "cluster host"),
+		Host:    flagSet.String("host", getEnv("CP_CONNECT_HOST", "http://localhost:8083"), "cluster host"),
 	}
 
 	cmdMap[name] = request
