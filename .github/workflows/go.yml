@@ -33,5 +33,5 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with: 
-        name: cp-connect
+        name: ${{ matrix.goarch }}/cp-connect
         path: ${{ matrix.goarch }}/cp-connect
