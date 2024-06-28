@@ -28,7 +28,7 @@ jobs:
     - name: Build for ${{ matrix.goarch }}
       run: GOOS=darwin go build -o ${{ matrix.goarch }}/cp-connect main.go
       env:
-        GOARCH= ${{ matrix.goarch }}
+        GOARCH: ${{ matrix.goarch }}
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
