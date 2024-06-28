@@ -26,7 +26,7 @@ jobs:
         GOARCH: ${{ matrix.goarch }}
 
     - name: Build for ${{ matrix.goarch }}
-      run: GOOS=darwin go build -o ${{ matrix.goarch }}/cp-connect main.go
+      run: GOOS=darwin go build -o cp-connect-${{ matrix.goarch }} main.go
       env:
         GOARCH: ${{ matrix.goarch }}
 
