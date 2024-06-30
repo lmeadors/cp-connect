@@ -13,7 +13,10 @@ type CpCommand interface {
 	Execute()
 }
 
-func HandleArguments() {
+func HandleArguments(version string, commit string) {
+
+	fmt.Println("version:", version)
+	fmt.Println("commit:", commit)
 
 	var cmdMap = make(map[string]CpCommand)
 
