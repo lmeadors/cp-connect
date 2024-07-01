@@ -3,6 +3,7 @@ package lib
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -15,8 +16,10 @@ type CpCommand interface {
 
 func HandleArguments(version string, commit string) {
 
-	fmt.Println("version:", version)
-	fmt.Println("commit:", commit)
+	logger := log.Default()
+
+	logger.Println("version:", version)
+	logger.Println("commit:", commit)
 
 	var cmdMap = make(map[string]CpCommand)
 
