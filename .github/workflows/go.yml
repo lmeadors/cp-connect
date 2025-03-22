@@ -28,7 +28,7 @@ jobs:
         run: go build -ldflags "$LDFLAGS" -o cp-connect-${{ matrix.goarch }} main.go
         env:
           LDFLAGS: -X main.version=${{ github.ref }} -X main.commit=${{ github.sha }}
-          GOOS: darwin
+          GOOS: macos-latest
           GOARCH: ${{ matrix.goarch }}
 
       - name: Import GPG private key
