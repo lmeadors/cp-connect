@@ -24,8 +24,11 @@ jobs:
         with:
           go-version: 'stable'
 
+      - name: Prepare output directories
+        run: mkdir ${{ matrix.goarch }}
+
       - name: Build for ${{ matrix.goarch }}
-        run: go build -ldflags "$LDFLAGS" -o cp-connect-${{ matrix.goarch }} main.go
+        run: go build -ldflags "$LDFLAGS" -o ${{ matrix.goarch }}/cp-connect main.go
         env:
           LDFLAGS: -X main.version=${{ github.ref }} -X main.commit=${{ github.sha }}
           GOOS: darwin
@@ -40,13 +43,13 @@ jobs:
 
       - name: Sign artifact
         run: |
-          gpg --batch --no-tty --detach-sig --armor --output cp-connect-${{ matrix.goarch }}.asc cp-connect-${{ matrix.goarch }}
+          gpg --batch --no-tty --detach-sig --armor --output ${{ matrix.goarch }}/cp-connect.asc ${{ matrix.goarch }}/cp-connect
 
       - name: List Artifacts (Debug)
-        run: ls -lag
+        run: find .
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: cp-connect-${{ matrix.goarch }}
-          path: cp-connect-${{ matrix.goarch }}*
+          path: ${{ matrix.goarch }}/cp-connect*
