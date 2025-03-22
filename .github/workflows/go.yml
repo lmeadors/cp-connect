@@ -36,6 +36,9 @@ jobs:
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --no-tty
 
+      - name: List Secret Keys (Debug)
+        run: gpg --list-secret-keys --keyid-format long
+
       - name: Sign artifact
         run: |
           gpg --batch --no-tty --detach-sig --armor --output cp-connect-${{ matrix.goarch }}.asc cp-connect-${{ matrix.goarch }}
