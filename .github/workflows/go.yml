@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-#        goarch: [ arm64 ]
         goarch: [ amd64, arm64 ]
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +22,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: 'stable'
-#          architecture: ${{ matrix.goarch }}
 
       - name: Build for ${{ matrix.goarch }}
         run: go build -ldflags "$LDFLAGS" -o cp-connect-${{ matrix.goarch }} main.go
