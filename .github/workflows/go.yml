@@ -41,6 +41,9 @@ jobs:
         run: |
           gpg --batch --no-tty --detach-sig --armor --output cp-connect-${{ matrix.goarch }}.asc cp-connect-${{ matrix.goarch }}
 
+      - name: List Artifacts (Debug)
+        run: ls -lag
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
