@@ -31,8 +31,16 @@ jobs:
           GOOS: darwin
           GOARCH: ${{ matrix.goarch }}
 
+      - name: Import GPG private key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --no-tty
+
+      - name: Sign artifact
+        run: |
+          gpg --batch --detach-sig --armor --output cp-connect-${{ matrix.goarch }}.asc cp-connect-${{ matrix.goarch }}
+
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: cp-connect
-          path: cp-connect-${{ matrix.goarch }}
+          path: cp-connect-${{ matrix.goarch }}*
