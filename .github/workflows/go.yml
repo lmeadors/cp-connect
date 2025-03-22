@@ -22,7 +22,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '1.22'
-          GOARCH: ${{ matrix.goarch }}
+          architecture: ${{ matrix.goarch }}
 
       - name: Build for ${{ matrix.goarch }}
         run: go build -ldflags "$LDFLAGS" -o cp-connect-${{ matrix.goarch }} main.go
