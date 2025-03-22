@@ -38,7 +38,7 @@ jobs:
 
       - name: Sign artifact
         run: |
-          gpg --batch --detach-sig --armor --output cp-connect-${{ matrix.goarch }}.asc cp-connect-${{ matrix.goarch }}
+          gpg --batch --no-tty --detach-sig --armor --output cp-connect-${{ matrix.goarch }}.asc cp-connect-${{ matrix.goarch }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
